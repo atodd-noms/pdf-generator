@@ -64,6 +64,11 @@
             white-space: pre-wrap;
         }
 
+        .conditions {
+            margin-left: 20px;
+            text-align: justify-all;
+        }
+
         .entry {
             font-weight: bold;
         }
@@ -92,7 +97,7 @@
 
         td {
             padding-left: 15px;
-            padding-right: 15px
+            padding-right: 15px;
             vertical-align: text-top;
             text-align: left;
         }
@@ -102,7 +107,11 @@
         }
 
         ol.start {
-            counter-reset: mycounter;
+            counter-reset: maincounter;
+        }
+
+        ol.roman.start {
+            counter-reset: romancounter;
         }
 
         ol.start li, ol.continue li {
@@ -110,8 +119,8 @@
         }
 
         ol.start li:before, ol.continue li:before {
-            content: counter(mycounter) ". ";
-            counter-increment: mycounter;
+            content: counter(maincounter) ". ";
+            counter-increment: maincounter;
         }
 
         ol {
@@ -130,13 +139,12 @@
 
         ol.roman li {
             padding-left: 20px;
-            margin-left: 20px;
-            list-style-type: lower-roman;
+            list-style-type: none;
         }
 
         ol.roman li:before {
-            content: "";
-            counter-increment: othercounter;
+            content: counter(romancounter, lower-roman) ". ";
+            counter-increment: romancounter;
         }
 
         img {
@@ -427,7 +435,7 @@
     <li>While on Home Detention Curfew you may be liable to recall to prison if you breach the condition of this
         licence relating to the curfew.  You will be in breach of this condition if:
 
-        <ol class="roman">
+        <ol class="roman start">
             <li>You are absent from your curfew address during the specified curfew hours;</li>
 
             <li>You commit violence against or threaten the contractor or any of his staff with violence;</li>
@@ -513,7 +521,7 @@
     <li>During your licence period you must:
 
 
-        <ol class="roman">
+        <ol class="roman start">
             <li>
                 Be of good behaviour and not behave in a way which undermines the purpose of the licence
                 period;
@@ -546,11 +554,10 @@
             </li>
             <!-- The indent of the following lines is critical because it is rendered as pre-formatted -->
             <!-- If you auto-format the file it will break the layout -->
-            <!-- Opening li should be one tab in from previous li-->
-                <li class="pre">Additional Conditions:
-                <!-- CONDITIONS should be at start of line -->
+            <!-- CONDITIONS should be at start of line -->
+<div class="pre conditions">
 CONDITIONS
-            </li>
+</div>
         </ol>
     </li>
 
@@ -626,7 +633,7 @@ CONDITIONS
 
     <li>During your post-sentence supervision period you must:
 
-        <ol class="roman">
+        <ol class="roman start">
 
             <li>Be of good behaviour and not behave in a way that undermines the rehabilitative purpose of the
                 supervision period;

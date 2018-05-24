@@ -85,13 +85,13 @@ jobs:
                 VERSION=$(cat ./build/artifacts/version.txt)
                 cat <<EOF > ./Dockerrun.aws.json
                 {
-                   AWSEBDockerrunVersion: '1',
-                   Image: {
-                     Name: 'mojdigitalstudio/licences-pdf-generator:' + $version,
-                     Update: 'true'
+                   "AWSEBDockerrunVersion": "1",
+                   "Image": {
+                     "Name": "mojdigitalstudio/pdf-generator:" + $version,
+                     "Update": "true"
                    },
-                   Ports: [
-                     {ContainerPort: '3000'}
+                   "Ports": [
+                     {"ContainerPort": "8080"}
                    ]
                  }
                 EOF

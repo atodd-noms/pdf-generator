@@ -37,7 +37,7 @@ public class Server {
 
         port(injector.getInstance(Key.get(Integer.class, Names.named("port"))));
 
-        getJson("/healthcheck", injector.getInstance(HealthService.class)::process);
+        getJson("/health", injector.getInstance(HealthService.class)::process);
         postJson("/generate", PdfRequest.class, injector.getInstance(PdfGenerator.class)::process);
 
 

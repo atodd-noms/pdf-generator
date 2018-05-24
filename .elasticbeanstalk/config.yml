@@ -1,21 +1,8 @@
 branch-defaults:
   master:
     environment: licences-pdf-generator-stage
-environment-defaults:
-  pdf-generator:
-    branch: null
-    repository: null
+deploy:
+  artifact: Dockerrun.aws.json
 global:
   application_name: licences-pdf-generator
-  default_ec2_keyname: null
-  default_platform: Java 8 running on 64bit Amazon Linux
   default_region: eu-west-2
-  include_git_submodules: true
-  instance_profile: null
-  platform_name: null
-  platform_version: null
-  profile: null
-  sc: git
-  workspace_type: Application
-deploy:
-  artifact: /workspace/pdfGenerator.jar

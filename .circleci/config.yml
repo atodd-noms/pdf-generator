@@ -1,65 +1,118 @@
-version: 2
+defaults: &defaults
+  working_directory: ~/noms-digital-studio/licences-pdf-generator
+  docker:
+    - image: circleci/openjdk:8
 
+version: 2
 jobs:
     build:
-        working_directory: ~/app
-        docker:
-            - image: circleci/openjdk:8
+      <<: *defaults
+      steps:
+          - checkout
+          - restore_cache:
+              keys:
+                - dotgradle-{{ checksum "build.gradle" }}
+                - dotgradle-
+          - run:
+              name: Run gradle build
+              command: ./gradlew build
+          - save_cache:
+              paths:
+                - ~/.gradle
+              key: dotgradle-{{ checksum "build.gradle" }}
+          - store_test_results:
+              path: ./build/test-results/test/
+          - run:
+              name: Generate Build version
+              command: |
+                echo "export BUILD_VERSION=$(date +%Y%m%d%H%M)-$CIRCLE_BUILD_NUM" >> $BASH_ENV
+          - run:
+              name: Save Fat Jar
+              command: |
+                mkdir -p ./build/artifacts
+                mv build/libs/*.jar ./build/artifacts/
+                ls -1 ./build/artifacts/pdfGenerator-*.jar | sed 's/^.*pdfGenerator-\(.*\)\.jar.*$/\1/' > ./build/artifacts/version.txt
+                cp ./build/artifacts/pdfGenerator*.jar ./build/artifacts/pdfGenerator.jar
+          - persist_to_workspace:
+              root: ./build/artifacts/
+              paths:
+                - ./pdfGenerator.jar
+                - ./version.txt
+          - store_artifacts:
+              path: build/artifacts
+              destination: jars
+    build_docker:
+      <<: *defaults
+      steps:
+        - checkout
+        - attach_workspace:
+            at: ~/noms-digital-studio/licences-pdf-generator
+        - setup_remote_docker:
+            exclusive: true
+        - run:
+            name: Build container and publish to docker hub (master only)
+            command: |
+               VERSION=$(cat /noms-digital-studio/licences-pdf-generator/version.txt)
+               GIT_REF=${CIRCLE_SHA1}
+               BUILD_VERSION=${VERSION}
+
+               docker build --rm=false . \
+                   --tag "mojdigitalstudio/pdf-generator:$BUILD_VERSION" \
+                   --label "maintainer=licences-team@digital.justice.gov.uk" \
+                   --label "build.number=$CIRCLE_BUILD_NUM" \
+                   --label "build.url=$CIRCLE_BUILD_URL" \
+                   --label "build.gitref=$GIT_REF"
+
+               docker login -u $DOCKER_USER -p $DOCKER_PASS
+               docker tag mojdigitalstudio/pdf-generator:$BUILD_VERSION mojdigitalstudio/pdf-generator:latest
+               docker push mojdigitalstudio/pdf-generator:$BUILD_VERSION
+               docker push mojdigitalstudio/pdf-generator:latest
+
+    deploy_release_to_eb:
+        <<: *defaults
         steps:
-            - checkout
-            - restore_cache:
-                keys:
-                  - dotgradle-{{ checksum "build.gradle" }}
-                  - dotgradle-
-            - run:
-                name: Run gradle build
-                command: ./gradlew build
-            - save_cache:
-                paths:
-                  - ~/.gradle
-                key: dotgradle-{{ checksum "build.gradle" }}
-            - store_test_results:
-                path: ./build/test-results/test/
-            - run:
-                name: Generate Build version
-                command: |
-                  echo "export BUILD_VERSION=$(date +%Y%m%d%H%M)-$CIRCLE_BUILD_NUM" >> $BASH_ENV
-            - run:
-                name: Save Fat Jar
-                command: |
-                  mkdir -p ./build/artifacts
-                  mv build/libs/*.jar ./build/artifacts/
-                  ls -1 ./build/artifacts/pdfGenerator-*.jar | sed 's/^.*pdfGenerator-\(.*\)\.jar.*$/\1/' > ./build/artifacts/version.txt
-                  cp ./build/artifacts/pdfGenerator*.jar ./build/artifacts/pdfGenerator.jar
-            - persist_to_workspace:
-                root: ./build/artifacts/
-                paths:
-                  - ./pdfGenerator.jar
-                  - ./version.txt
-            - store_artifacts:
-                path: build/artifacts
-                destination: jars
-    deploy:
-        docker:
-            - image: paulodiovani/aws-eb-cli
-        working_directory: ~/app
-        steps:
-            - attach_workspace:
-                at: /workspace
-            - checkout
-            - run:
-                name: Deploy to Elastic Beanstalk
-                command: |
-                  eb deploy --label $(cat /workspace/version.txt)
+          - checkout
+          - attach_workspace:
+              at: ~/noms-digital-studio/licences-pdf-generator
+          - deploy:
+              name: Install elastic beanstalk CLI
+              command: |
+                sudo apt-get install python-pip python-dev
+                pip install --user 'six>-1.9.0' awsebcli --ignore-installed
+          - deploy:
+              name: Deploy to Elastic Beanstalk Dev
+              command: |
+                VERSION=$(cat /noms-digital-studio/licences-pdf-generator/version.txt)
+                cat <<EOF > ./Dockerrun.aws.json
+                {
+                   AWSEBDockerrunVersion: '1',
+                   Image: {
+                     Name: 'mojdigitalstudio/licences-pdf-generator:' + $version,
+                     Update: 'true'
+                   },
+                   Ports: [
+                     {ContainerPort: '3000'}
+                   ]
+                 }
+                EOF
+                ~/.local/bin/eb deploy --process --verbose --label ${VERSION}
+          - persist_to_workspace:
+              root: .
+              paths:
+                - Dockerrun.aws.json
 
 workflows:
     version: 2
     build-deploy:
         jobs:
             - build
-#            - deploy:
-#                requires:
-#                    - build
-#                filters:
-#                    branches:
-#                      only: master
+            - build_docker:
+                requires:
+                  - build
+                filters:
+                  branches:
+                    only:
+                      - master
+            - deploy_release_to_eb:
+                requires:
+                  - build_docker

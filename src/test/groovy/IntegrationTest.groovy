@@ -11,10 +11,10 @@ import static groovyx.net.http.ContentType.*
 class IntegrationTest extends Specification {
     def jsonSlurper = new JsonSlurper()
 
-    def "server returns healthcheck endpoint details"() {
+    def "server returns health endpoint details"() {
 
         when:
-        def result = new RESTClient('http://localhost:8080/').get(path: 'healthcheck')
+        def result = new RESTClient('http://localhost:8080/').get(path: 'health')
 
         then:
         result.status == 200

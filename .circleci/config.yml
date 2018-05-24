@@ -34,10 +34,10 @@ jobs:
                 ls -1 ./build/artifacts/pdfGenerator-*.jar | sed 's/^.*pdfGenerator-\(.*\)\.jar.*$/\1/' > ./build/artifacts/version.txt
                 cp ./build/artifacts/pdfGenerator*.jar ./build/artifacts/pdfGenerator.jar
           - persist_to_workspace:
-              root: ./build/artifacts/
+              root: .
               paths:
-                - ./pdfGenerator.jar
-                - ./version.txt
+                - build/artifacts/pdfGenerator.jar
+                - build/artifacts/version.txt
           - store_artifacts:
               path: build/artifacts
               destination: jars
@@ -52,7 +52,7 @@ jobs:
         - run:
             name: Build container and publish to docker hub (master only)
             command: |
-               VERSION=$(cat /noms-digital-studio/licences-pdf-generator/version.txt)
+               VERSION=$(cat /noms-digital-studio/licences-pdf-generator/build/artifacts/version.txt)
                GIT_REF=${CIRCLE_SHA1}
                BUILD_VERSION=${VERSION}
 
@@ -82,7 +82,7 @@ jobs:
           - deploy:
               name: Deploy to Elastic Beanstalk Dev
               command: |
-                VERSION=$(cat /noms-digital-studio/licences-pdf-generator/version.txt)
+                VERSION=$(cat /noms-digital-studio/licences-pdf-generator/build/artifacts/version.txt)
                 cat <<EOF > ./Dockerrun.aws.json
                 {
                    AWSEBDockerrunVersion: '1',

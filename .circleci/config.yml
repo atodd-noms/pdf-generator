@@ -52,7 +52,7 @@ jobs:
         - run:
             name: Build container and publish to docker hub (master only)
             command: |
-               VERSION=$(cat /noms-digital-studio/licences-pdf-generator/build/artifacts/version.txt)
+               VERSION=$(cat ./build/artifacts/version.txt)
                GIT_REF=${CIRCLE_SHA1}
                BUILD_VERSION=${VERSION}
 
@@ -82,7 +82,7 @@ jobs:
           - deploy:
               name: Deploy to Elastic Beanstalk Dev
               command: |
-                VERSION=$(cat /noms-digital-studio/licences-pdf-generator/build/artifacts/version.txt)
+                VERSION=$(cat ./build/artifacts/version.txt)
                 cat <<EOF > ./Dockerrun.aws.json
                 {
                    AWSEBDockerrunVersion: '1',

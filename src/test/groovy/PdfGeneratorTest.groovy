@@ -1,3 +1,4 @@
+import spock.lang.Ignore
 import spock.lang.Specification
 import uk.gov.justice.digital.pdf.data.PdfRequest
 import uk.gov.justice.digital.pdf.service.PdfGenerator
@@ -5,6 +6,7 @@ import uk.gov.justice.digital.pdf.service.ResourceRepository
 
 class PdfGeneratorTest extends Specification {
 
+    @Ignore
     def "PdfGenerator processes a PdfRequest and creates a PDF from a template"() {
 
         setup:
@@ -19,6 +21,7 @@ class PdfGeneratorTest extends Specification {
         result.length > 10000
     }
 
+    @Ignore
     def "PdfGenerator processes XML characters successfully"() {
 
         setup:

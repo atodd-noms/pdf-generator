@@ -2,6 +2,7 @@ import groovy.json.JsonSlurper
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
 import spark.Spark
+import spock.lang.Ignore
 import spock.lang.Specification
 import uk.gov.justice.digital.pdf.Configuration
 import uk.gov.justice.digital.pdf.Server
@@ -30,6 +31,7 @@ class IntegrationTest extends Specification {
         """)
     }
 
+    @Ignore
     def "POST generate creates a PDF and returns as a JSON string of Bytes"() {
 
         when:

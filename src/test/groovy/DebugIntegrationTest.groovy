@@ -1,11 +1,13 @@
 import groovyx.net.http.RESTClient
 import helpers.TestConfiguration
 import spark.Spark
+import spock.lang.Ignore
 import spock.lang.Specification
 import uk.gov.justice.digital.pdf.Server
 
 class DebugIntegrationTest extends Specification {
 
+    @Ignore
     def "debug available in test configuration"() {
 
         when:
